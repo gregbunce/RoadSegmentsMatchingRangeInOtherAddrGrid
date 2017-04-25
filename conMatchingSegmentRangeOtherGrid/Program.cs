@@ -24,7 +24,7 @@ namespace conMatchingSegmentRangeOtherGrid
                 string strYearMonthDayHourMin = DateTime.Now.ToString("-yyyy-MM-dd-HH-mm");
 
                 // create sql query string for recordset to loop through (remove the top(#) keyword when running outside of testing)
-                string strSqlQuery = @"select top(200) 
+                string strSqlQuery = @"select top(1000) 
                                     SGID10.Transportation.ROADS.GLOBALID, 
                                     SGID10.Transportation.ROADS.ADDR_SYS, 
                                     SGID10.Transportation.ROADS.L_F_ADD, 
@@ -33,7 +33,8 @@ namespace conMatchingSegmentRangeOtherGrid
                                     SGID10.Transportation.ROADS.R_T_ADD, 
                                     SGID10.Transportation.ROADS.PREDIR, 
                                     SGID10.Transportation.ROADS." + args[0] + @", 
-                                    SGID10.Transportation.ROADS." + args[1] + @" 
+                                    SGID10.Transportation.ROADS." + args[1] + @",
+                                    SGID10.Transportation.ROADS.SUFDIR
                                     from SGID10.Transportation.ROADS                                    
                                     where CARTOCODE not in ('1','7','99')                                    
                                     and (HWYNAME = '')                                    
@@ -50,7 +51,7 @@ namespace conMatchingSegmentRangeOtherGrid
                 fileStream = new FileStream(path, FileMode.Create);
                 streamWriter = new StreamWriter(fileStream);
                 // write the first line of the text file - this is the field headings
-                streamWriter.WriteLine("CODE_ID" + "," + "GLOBALID" + "," + "L_F_ADD" + "," + "L_T_ADD" + "," + "R_F_ADD" + "," + "R_T_ADD" + "," + "ADDR_SYS" + "," + "PREDIR" + "," + args[0] + "," + args[1] + "," + "RangeMatch_N" + "," + "RangeMatch_S" + "," + "RangeMatch_E" + "," + "RangeMatch_W" + "," + "NOTES");
+                streamWriter.WriteLine("CODE_ID" + "," + "GLOBALID" + "," + "L_F_ADD" + "," + "L_T_ADD" + "," + "R_F_ADD" + "," + "R_T_ADD" + "," + "ADDR_SYS" + "," + "PREDIR" + "," + args[0] + "," + args[1] + "," + "SUFDIR" + "," + "RangeMatch_N" + "," + "RangeMatch_S" + "," + "RangeMatch_E" + "," + "RangeMatch_W" + "," + "NOTES");
                 int intIttrID = 0;
 
                 // get connection string to sql database from appconfig
@@ -77,6 +78,7 @@ namespace conMatchingSegmentRangeOtherGrid
                                 intIttrID = intIttrID + 1;
 
                                 string strAddrSystem = reader1["ADDR_SYS"].ToString();
+                                string strSufDir = reader1["SUFDIR"].ToString();
                                 string strGlobalId = reader1["GLOBALID"].ToString();
                                 int intL_F = Convert.ToInt32(reader1["L_F_ADD"]);
                                 int intL_T = Convert.ToInt32(reader1["L_T_ADD"]);
@@ -86,19 +88,19 @@ namespace conMatchingSegmentRangeOtherGrid
                                 string strStreetName = reader1[args[0]].ToString();
                                 string strStreetType = reader1[args[1]].ToString();
 
-                                //
-                                Tuple<string, string, string, string, string> tplSegsInOtherGrids = RoadSegmentInOtherGrid(intL_F, intL_T, intR_F, intR_T, strAddrSystem, strStreetName, strStreetType, strPreDir, args[0], args[1]);
+                                // check if this road segment with this range can be found in another quad, within this address system
+                                Tuple<string, string, string, string, string> tplSegsInOtherGrids = RoadSegmentInOtherGrid(intL_F, intL_T, intR_F, intR_T, strAddrSystem, strStreetName, strStreetType, strPreDir, args[0], args[1], strSufDir);
 
                                 // check if any values were returned
                                 if (tplSegsInOtherGrids.Item1 != "-1" & tplSegsInOtherGrids.Item2 != "-1" & tplSegsInOtherGrids.Item3 != "-1" & tplSegsInOtherGrids.Item4 != "-1" & tplSegsInOtherGrids.Item5 != "-1")
                                 {
                                     // 0=off; 1=on in the RangeMatch fields
-                                    streamWriter.WriteLine(intIttrID + "," + strGlobalId + "," + intL_F + "," + intL_T + "," + intR_F + "," + intR_T + "," + strAddrSystem + "," + strPreDir + "," + strStreetName + "," + strStreetType + "," + tplSegsInOtherGrids.Item1 + "," + tplSegsInOtherGrids.Item2 + "," + tplSegsInOtherGrids.Item3 + "," + tplSegsInOtherGrids.Item4 + "," + tplSegsInOtherGrids.Item5);
+                                    streamWriter.WriteLine(intIttrID + ",{" + strGlobalId.ToUpper() + "}," + intL_F + "," + intL_T + "," + intR_F + "," + intR_T + "," + strAddrSystem + "," + strPreDir + "," + strStreetName + "," + strStreetType + "," + strSufDir + "," + tplSegsInOtherGrids.Item1 + "," + tplSegsInOtherGrids.Item2 + "," + tplSegsInOtherGrids.Item3 + "," + tplSegsInOtherGrids.Item4 + "," + tplSegsInOtherGrids.Item5);
                                 }
                                 else
                                 {
                                     // 0=off; 1=on in the RangeMatch fields
-                                    streamWriter.WriteLine(intIttrID + "," + strGlobalId + "," + intL_F + "," + intL_T + "," + intR_F + "," + intR_T + "," + strAddrSystem + "," + strPreDir + "," + strStreetName + "," + strStreetType + "," + "0" + "," + "0" + "," + "0" + "," + "0" + "," + "");
+                                    streamWriter.WriteLine(intIttrID + ",{" + strGlobalId.ToUpper() + "}," + intL_F + "," + intL_T + "," + intR_F + "," + intR_T + "," + strAddrSystem + "," + strPreDir + "," + strStreetName + "," + strStreetType + "," + strSufDir + "," + string.Empty + "," + string.Empty + "," + string.Empty + "," + string.Empty + "," + string.Empty);
                                 }
                             }
                         }
@@ -117,7 +119,7 @@ namespace conMatchingSegmentRangeOtherGrid
 
 
         // this method checks if the passed-in road segment is found in another address grid/quad (in the same address system) with overlapping ranges
-        static Tuple<string, string, string, string, string> RoadSegmentInOtherGrid(int intL_F, int intL_T, int intR_F, int intR_T, string strAddrSys, string strStName, string strStType, string strPreDir, string strArg0, string strArg1)
+        static Tuple<string, string, string, string, string> RoadSegmentInOtherGrid(int intL_F, int intL_T, int intR_F, int intR_T, string strAddrSys, string strStName, string strStType, string strPreDir, string strArg0, string strArg1, string strSufDir)
         {
             try
             {
@@ -133,6 +135,7 @@ namespace conMatchingSegmentRangeOtherGrid
                                                     and SGID10.Transportation.ROADS." + strArg0 + @" = '" + strStName + @"'
                                                     and SGID10.Transportation.ROADS." + strArg1 + @" = '" + strStType + @"'
                                                     and SGID10.Transportation.ROADS.PREDIR <> '" + strPreDir + @"'
+                                                    and SGID10.Transportation.ROADS.SUFDIR = '" + strSufDir + @"'
                                                     and ((SGID10.Transportation.ROADS.L_F_ADD >= " + intL_F + @" and SGID10.Transportation.ROADS.L_T_ADD <= " + intL_T + @") or (SGID10.Transportation.ROADS.R_F_ADD >= " + intR_F + @" and SGID10.Transportation.ROADS.R_T_ADD <= " + intR_T + @"))";
 
                 // get connection string to sql database from appconfig
