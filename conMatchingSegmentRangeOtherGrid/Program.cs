@@ -50,7 +50,7 @@ namespace conMatchingSegmentRangeOtherGrid
                 fileStream = new FileStream(path, FileMode.Create);
                 streamWriter = new StreamWriter(fileStream);
                 // write the first line of the text file - this is the field headings
-                streamWriter.WriteLine("CODE_ID" + "," + "GLOBALID" + "," + "ADDR_SYS" + "," + "PREDIR" + "," + args[0] + "," + args[1] + "," + "RangeMatch_N" + "," + "RangeMatch_S" + "," + "RangeMatch_E" + "," + "RangeMatch_W" + "," + "NOTES");
+                streamWriter.WriteLine("CODE_ID" + "," + "GLOBALID" + "," + "L_F_ADD" + "," + "L_T_ADD" + "," + "R_F_ADD" + "," + "R_T_ADD" + "," + "ADDR_SYS" + "," + "PREDIR" + "," + args[0] + "," + args[1] + "," + "RangeMatch_N" + "," + "RangeMatch_S" + "," + "RangeMatch_E" + "," + "RangeMatch_W" + "," + "NOTES");
                 int intIttrID = 0;
 
                 // get connection string to sql database from appconfig
@@ -93,12 +93,12 @@ namespace conMatchingSegmentRangeOtherGrid
                                 if (tplSegsInOtherGrids.Item1 != "-1" & tplSegsInOtherGrids.Item2 != "-1" & tplSegsInOtherGrids.Item3 != "-1" & tplSegsInOtherGrids.Item4 != "-1" & tplSegsInOtherGrids.Item5 != "-1")
                                 {
                                     // 0=off; 1=on in the RangeMatch fields
-                                    streamWriter.WriteLine(intIttrID + "," + strGlobalId + "," + strAddrSystem + "," + strPreDir + "," + strStreetName + "," + strStreetType + "," + tplSegsInOtherGrids.Item1 + "," + tplSegsInOtherGrids.Item2 + "," + tplSegsInOtherGrids.Item3 + "," + tplSegsInOtherGrids.Item4 + "," + tplSegsInOtherGrids.Item5);
+                                    streamWriter.WriteLine(intIttrID + "," + strGlobalId + "," + intL_F + "," + intL_T + "," + intR_F + "," + intR_T + "," + strAddrSystem + "," + strPreDir + "," + strStreetName + "," + strStreetType + "," + tplSegsInOtherGrids.Item1 + "," + tplSegsInOtherGrids.Item2 + "," + tplSegsInOtherGrids.Item3 + "," + tplSegsInOtherGrids.Item4 + "," + tplSegsInOtherGrids.Item5);
                                 }
                                 else
                                 {
                                     // 0=off; 1=on in the RangeMatch fields
-                                    streamWriter.WriteLine(intIttrID + "," + strGlobalId + "," + strAddrSystem + "," + strPreDir + "," + strStreetName + "," + strStreetType + "," + "0" + "," + "0" + "," + "0" + "," + "0" + "," + "queried 0 rows");
+                                    streamWriter.WriteLine(intIttrID + "," + strGlobalId + "," + intL_F + "," + intL_T + "," + intR_F + "," + intR_T + "," + strAddrSystem + "," + strPreDir + "," + strStreetName + "," + strStreetType + "," + "0" + "," + "0" + "," + "0" + "," + "0" + "," + "");
                                 }
                             }
                         }
